@@ -29,7 +29,8 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/predict", {
+      const ML_URL = process.env.REACT_APP_ML_URL || "http://localhost:5000";
+      const response = await fetch(`${ML_URL}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symptoms: input }) 
