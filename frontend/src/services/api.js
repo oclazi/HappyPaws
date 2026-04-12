@@ -1,10 +1,10 @@
 import axios from "axios";
 
-// 🚀 PRODUCTION BACKEND URL
-const API_URL = "https://happypaws-backend-z4ik.onrender.com/api";
+// 🚀 BACKEND URL (override with REACT_APP_API_URL for local/docker deployments)
+const API_URL = process.env.REACT_APP_API_URL || "https://happypaws-backend-z4ik.onrender.com/api";
 
-// 🧠 PRODUCTION ML SERVICE URL
-const ML_API_URL = "https://happypaws-ml-dmjm.onrender.com";
+// 🧠 ML SERVICE URL (optional chatbot feature)
+const ML_API_URL = process.env.REACT_APP_ML_URL || "https://happypaws-ml-dmjm.onrender.com";
 
 const api = axios.create({
   baseURL: API_URL,
