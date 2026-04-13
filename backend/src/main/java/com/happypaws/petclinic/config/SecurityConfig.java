@@ -36,6 +36,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+                // ✅ Swagger / OpenAPI (public)
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
                 // ✅ Public Endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/vets/**").permitAll() // Vets list is public

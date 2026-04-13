@@ -1,6 +1,11 @@
 package com.happypaws.petclinic.controller;
 
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,6 +18,7 @@ import com.happypaws.petclinic.repository.*;
 @RestController
 @RequestMapping("/api/appointments")
 @CrossOrigin(origins = "http://localhost:3000")
+@Tag(name = "Appointments", description = "Endpoints for managing appointments")
 public class AppointmentController {
 
     private final AppointmentRepository appointmentRepository;
@@ -29,13 +35,19 @@ public class AppointmentController {
         this.vetRepository = vetRepository;
     }
 
-    // ✅ Admin: Get All Appointments
+    @Operation(summary = "Get all appointments", description = "Returns all appointments (Admin use)")
+    @ApiResponse(responseCode = "200", description = "List of appointments returned")
     @GetMapping
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
     }
 
-    // ✅ Owner: Book Appointment
+    @Operation(summary = "Book an appointment", description = "Books a new appointment for the authenticated owner")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Appointment booked successfully"),
+        @ApiResponse(responseCode = "404", description = "Owner profile not found"),
+        @ApiResponse(responseCode = "409", description = "Time slot unavailable")
+    })
     @PostMapping
     public ResponseEntity<?> bookAppointment(@RequestBody AppointmentRequest request, Authentication authentication) {
         String email = authentication.getName();
@@ -70,7 +82,8 @@ public class AppointmentController {
         return ResponseEntity.ok(appointment);
     }
 
-    // ✅ Owner: Get My Appointments
+    @Operation(summary = "Get my appointments", description = "Returns all appointments for the authenticated owner")
+    @ApiResponse(responseCode = "200", description = "List of owner appointments returned")
     @GetMapping("/my-appointments")
     public List<Appointment> getMyAppointments(Authentication authentication) {
         String email = authentication.getName();
@@ -84,13 +97,15 @@ public class AppointmentController {
         return appointmentRepository.findByOwnerId(owner.getId());
     }
     
-    // ✅ Admin: Delete Appointment
+    @Operation(summary = "Delete appointment", description = "Deletes an appointment by ID (Admin use)")
+    @ApiResponse(responseCode = "200", description = "Appointment deleted")
     @DeleteMapping("/{id}")
     public void deleteAppointment(@PathVariable Long id) {
         appointmentRepository.deleteById(id);
     }
 
-    // ✅ Vet: Get Vet Schedule (Required for Vet Panel)
+    @Operation(summary = "Get vet schedule", description = "Returns all appointments for the authenticated veterinarian")
+    @ApiResponse(responseCode = "200", description = "Vet schedule returned")
     @GetMapping("/vet-schedule")
     public List<Appointment> getVetSchedule(Authentication authentication) {
         String email = authentication.getName();
