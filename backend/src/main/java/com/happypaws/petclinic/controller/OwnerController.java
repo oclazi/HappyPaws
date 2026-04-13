@@ -3,6 +3,10 @@ package com.happypaws.petclinic.controller;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +21,7 @@ import com.happypaws.petclinic.repository.UserRepository;
 @RestController
 @RequestMapping("/api/owners")
 @CrossOrigin(origins = "http://localhost:3000")
+@Tag(name = "Owners", description = "Endpoints for managing pet owners")
 public class OwnerController {
 
     private final UserRepository userRepository;
@@ -29,13 +34,18 @@ public class OwnerController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ✅ 1. GET ALL OWNERS (Fixes Admin Dashboard "Owners" Tab)
+    @Operation(summary = "Get all owners", description = "Returns a list of all registered pet owners (Admin use)")
+    @ApiResponse(responseCode = "200", description = "List of owners returned successfully")
     @GetMapping
     public List<Owner> getAllOwners() {
         return ownerRepository.findAll();
     }
 
-    // ✅ 2. GET CURRENT OWNER PROFILE (Fixes 404 Error on /api/owners/me)
+    @Operation(summary = "Get current owner profile", description = "Returns the profile of the authenticated owner")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Owner profile returned"),
+        @ApiResponse(responseCode = "404", description = "Owner profile not found")
+    })
     @GetMapping("/me")
     public ResponseEntity<?> getMyProfile(Authentication authentication) {
         String email = authentication.getName();
@@ -50,7 +60,12 @@ public class OwnerController {
                 .orElse(ResponseEntity.status(404).body(null)); // Returns 404 if Owner profile is missing
     }
 
-    // ✅ 3. REGISTER NEW OWNER
+    @Operation(summary = "Register a new owner", description = "Creates a new owner account with a linked user login")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Owner registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Email already in use"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
     public ResponseEntity<?> registerOwner(@RequestBody Map<String, String> payload) {
         try {

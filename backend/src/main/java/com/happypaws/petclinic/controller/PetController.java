@@ -2,6 +2,10 @@ package com.happypaws.petclinic.controller;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication; 
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +20,7 @@ import com.happypaws.petclinic.service.PetService;
 @RestController
 @RequestMapping("/api/pets")
 @CrossOrigin(origins = "http://localhost:3000") // ✅ Adjusted to specifically allow your React app
+@Tag(name = "Pets", description = "Endpoints for managing pets")
 public class PetController {
 
     private final PetService petService;
@@ -34,7 +39,8 @@ public class PetController {
     }
 
     // 🐾 1. GET MY PETS (Logged-in Owner Only)
-    // This is the endpoint your "My Pets" page calls
+    @Operation(summary = "Get my pets", description = "Returns all pets belonging to the authenticated owner")
+    @ApiResponse(responseCode = "200", description = "List of pets returned")
     @GetMapping("/my-pets")
     public List<Pet> getMyPets(Authentication authentication) {
         String email = authentication.getName();
@@ -47,7 +53,11 @@ public class PetController {
         return petRepository.findByOwnerId(owner.getId());
     }
 
-    // ✅ 2. CREATE PET (Automatically assigns to logged-in Owner)
+    @Operation(summary = "Create a pet", description = "Creates a new pet and assigns it to the authenticated owner")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pet created successfully"),
+        @ApiResponse(responseCode = "404", description = "Owner profile not found")
+    })
     @PostMapping
     public Pet createPet(@RequestBody Pet pet, Authentication authentication) {
         String email = authentication.getName();
@@ -61,19 +71,28 @@ public class PetController {
         return petService.savePet(pet);
     }
 
-    // ✅ 3. GET ALL PETS (Admin/Vet Use)
+    @Operation(summary = "Get all pets", description = "Returns all pets (Admin/Vet use)")
+    @ApiResponse(responseCode = "200", description = "List of all pets returned")
     @GetMapping
     public List<Pet> getAllPets() {
         return petService.getAllPets();
     }
 
-    // ✅ 4. GET PET BY ID
+    @Operation(summary = "Get pet by ID", description = "Returns a specific pet by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pet found"),
+        @ApiResponse(responseCode = "404", description = "Pet not found")
+    })
     @GetMapping("/{id}")
     public Pet getPetById(@PathVariable Long id) {
         return petService.getPetById(id);
     }
 
-    // ✅ 5. UPDATE PET
+    @Operation(summary = "Update pet", description = "Updates an existing pet's information")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pet updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Pet not found")
+    })
     @PutMapping("/{id}")
     public Pet updatePet(@PathVariable Long id, @RequestBody Pet petDetails) {
         Pet pet = petService.getPetById(id);
@@ -95,21 +114,24 @@ public class PetController {
         return petService.savePet(pet);
     }
 
-    // ✅ 6. DELETE PET BY ID
+    @Operation(summary = "Delete pet by ID", description = "Deletes a specific pet by its ID")
+    @ApiResponse(responseCode = "200", description = "Pet deleted successfully")
     @DeleteMapping("/{id}")
     public String deletePetById(@PathVariable Long id) {
         petService.deletePet(id);
         return "Pet deleted successfully";
     }
 
-    // ✅ 7. DELETE ALL PETS
+    @Operation(summary = "Delete all pets", description = "Deletes all pets from the system")
+    @ApiResponse(responseCode = "200", description = "All pets deleted")
     @DeleteMapping
     public String deleteAllPets() {
         petService.deleteAllPets();
         return "All pets deleted successfully";
     }
 
-    // ✅ 8. BULK INSERT PETS
+    @Operation(summary = "Bulk insert pets", description = "Creates multiple pets in a single request")
+    @ApiResponse(responseCode = "200", description = "Pets created successfully")
     @PostMapping("/bulk")
     public List<Pet> createPets(@RequestBody List<Pet> pets) {
         return petService.saveAllPets(pets);
